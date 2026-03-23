@@ -3,7 +3,7 @@ FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
-
+RUN apk update && apk upgrade --no-cache
 # Copy package files and install dependencies
 COPY package*.json ./
 RUN npm install
