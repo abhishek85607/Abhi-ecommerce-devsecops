@@ -1,5 +1,5 @@
 # Use a lightweight node image
-FROM node:18-slim
+FROM node:18-bookworm-slim
 
 # Set working directory
 WORKDIR /app
