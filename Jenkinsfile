@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = "abhi-frontend"
     }
-
+ 
     stages {
         stage('Cleanup Environment') {
             steps {
