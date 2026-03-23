@@ -15,7 +15,7 @@ pipeline {
 
         stage('Git Checkout') {
             steps {
-                git 'https://github.com/abhishek85607/Abhi-ecommerce-devsecops.git'
+                git branch: 'main', url: 'https://github.com/abhishek85607/Abhi-ecommerce-devsecops.git'
             }
         }
 
