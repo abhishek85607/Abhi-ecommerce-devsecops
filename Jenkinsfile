@@ -3,20 +3,26 @@ pipeline {
     
     environment {
         DOCKER_IMAGE = "abhi-frontend"
-        REGISTRY_USER = "abhiraj328" // Apna DockerHub username dalo
     }
 
     stages {
-        stage('Cleanup') {
+        stage('Cleanup Environment') {
             steps {
-                deleteDir() // Har baar purana kachra saaf
+                // Pehle purana kachra saaf karo
+                deleteDir()
             }
         }
-         stage('Trivy FS Scan') {
+
+        stage('Git Checkout') {
+            steps {
+                git 'https://github.com/abhishek85607/Abhi-ecommerce-devsecops.git'
+            }
+        }
+
+        stage('Trivy FS Scan') {
             steps {
                 script {
-                    echo "🔍 Scanning Source Code for Vulnerabilities..."
-                    // Isse report file banegi
+                    echo "🔍 Scanning Source Code..."
                     sh "trivy fs . > trivy-fs-report.txt"
                 }
             }
@@ -24,6 +30,7 @@ pipeline {
 
         stage('Docker Build') {
             steps {
+                // Ab code delete nahi hua hoga, toh build chal jayega
                 sh "sudo docker build -t ${env.DOCKER_IMAGE}:${env.BUILD_NUMBER} ."
             }
         }
@@ -31,8 +38,7 @@ pipeline {
         stage('Trivy Image Scan') {
             steps {
                 script {
-                    echo "🛡️ Scanning Docker Image: ${env.DOCKER_IMAGE}:${env.BUILD_NUMBER}"
-                    // Agar CRITICAL vulnerability mili toh build fail ho jayega (--exit-code 1)
+                    echo "🛡️ Scanning Docker Image..."
                     sh "trivy image --severity CRITICAL --exit-code 1 ${env.DOCKER_IMAGE}:${env.BUILD_NUMBER}"
                 }
             }
@@ -41,9 +47,8 @@ pipeline {
 
     post {
         always {
-            // Jenkins Dashboard par report file save karne ke liye
             archiveArtifacts artifacts: 'trivy-fs-report.txt', fingerprint: true
-            echo "Pipeline finished. Check Artifacts for Security Report."
+            echo "Pipeline finished."
         }
     }
 }
