@@ -12,14 +12,7 @@ pipeline {
                 deleteDir() // Har baar purana kachra saaf
             }
         }
-
-        stage('Git Checkout') {
-            steps {
-                git 'https://github.com/abhishek85607/Abhi-ecommerce-devsecops.git'
-            }
-        }
-
-        stage('Trivy FS Scan') {
+         stage('Trivy FS Scan') {
             steps {
                 script {
                     echo "🔍 Scanning Source Code for Vulnerabilities..."
