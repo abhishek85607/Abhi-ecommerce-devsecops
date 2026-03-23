@@ -2,7 +2,7 @@ pipeline {
     agent { label 'Redhat_Slave' }
     
     environment {
-        DOCKER_IMAGE = "Abhi-frontend"
+        DOCKER_IMAGE = "abhi-frontend"
         REGISTRY_USER = "abhiraj328" // Apna DockerHub username dalo
     }
 
