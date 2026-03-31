@@ -3,7 +3,6 @@ pipeline {
     
     environment {
         DOCKER_IMAGE = "abhi-frontend"
-        // Yahan apna Docker Hub username dalo
         DOCKER_HUB_USER = "abhiraj328" 
     }
 
@@ -17,7 +16,6 @@ pipeline {
 
         stage('Git Checkout') {
             steps {
-                // Tumhara GitHub URL yahan set hai
                 git branch: 'main', url: 'https://github.com/abhishek85607/Abhi-ecommerce-devsecops.git'
             }
         }
@@ -42,7 +40,6 @@ pipeline {
             steps {
                 script {
                     echo "🛡️ Scanning Docker Image for CRITICAL vulnerabilities..."
-                    // Agar koi CRITICAL bug mila toh build yahi fail ho jayega
                     sh "trivy image --severity CRITICAL --exit-code 1 ${env.DOCKER_IMAGE}:${env.BUILD_NUMBER}"
                 }
             }
@@ -51,14 +48,11 @@ pipeline {
         stage('Docker Push to Hub') {
             steps {
                 script {
-                    // 'docker-hub-creds' wahi ID hai jo tumne Jenkins Credentials mein banayi hai
                     withCredentials([usernamePassword(credentialsId: 'docker-creds', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
-                        
                         echo "🔑 Logging into Docker Hub..."
                         sh "echo ${DOCKER_PASS} | sudo docker login -u ${DOCKER_USER} --password-stdin"
                         
                         echo "🏷️ Tagging and Pushing Image..."
-                        // Image ko build number aur 'latest' dono tags ke saath push karenge
                         sh "sudo docker tag ${env.DOCKER_IMAGE}:${env.BUILD_NUMBER} ${DOCKER_USER}/${env.DOCKER_IMAGE}:${env.BUILD_NUMBER}"
                         sh "sudo docker tag ${env.DOCKER_IMAGE}:${env.BUILD_NUMBER} ${DOCKER_USER}/${env.DOCKER_IMAGE}:latest"
                         
@@ -68,15 +62,27 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    echo "☸️ Deploying to Kubernetes (Minikube)..."
+                    // Ye command k8s folder ke andar ki deploy.yaml ko run karegi
+                    sh "kubectl apply -f k8s/deploy.yaml"
+                    
+                    echo "🚀 Checking Deployment Status..."
+                    sh "kubectl get pods"
+                    sh "kubectl get svc"
+                }
+            }
+        }
     }
 
     post {
         always {
-            // Security report ko Jenkins dashboard pe save karna
             archiveArtifacts artifacts: 'trivy-fs-report.txt', fingerprint: true
-            // Logout karna security ke liye best practice hai
             sh "sudo docker logout || true"
-            echo "✅ Bhai Abhishek, Pipeline successfully finish ho gayi!"
+            echo "✅ Bhai Abhishek, Pipeline with K8s Deployment successfully finish ho gayi!"
         }
     }
 }
