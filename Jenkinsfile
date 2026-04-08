@@ -27,7 +27,7 @@ pipeline {
                     echo "🛡️ Code Quality Check shuru ho raha hai..."
                     // 'sonar-server' aur 'sonar-scanner' wahi naam hain jo tumne Jenkins Tools/System mein diye the
                     def scannerHome = tool 'sonar-scanner'
-                    withSonarQubeEnv('sonar-server') {
+                    withSonarQubeEnv('SonarQube') {
                         sh "${scannerHome}/bin/sonar-scanner \
                         -Dsonar.projectKey=ecommerce-project \
                         -Dsonar.projectName=ecommerce-project \
