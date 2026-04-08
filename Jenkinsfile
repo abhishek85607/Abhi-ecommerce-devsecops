@@ -20,6 +20,33 @@ pipeline {
             }
         }
 
+        // --- NAYA SONARQUBE SECTION SHURU ---
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    echo "🛡️ Code Quality Check shuru ho raha hai..."
+                    // 'sonar-server' aur 'sonar-scanner' wahi naam hain jo tumne Jenkins Tools/System mein diye the
+                    def scannerHome = tool 'sonar-scanner'
+                    withSonarQubeEnv('sonar-server') {
+                        sh "${scannerHome}/bin/sonar-scanner \
+                        -Dsonar.projectKey=ecommerce-project \
+                        -Dsonar.projectName=ecommerce-project \
+                        -Dsonar.sources=."
+                    }
+                }
+            }
+        }
+
+        stage("Quality Gate") {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    // Ye pipeline ko rok dega agar SonarQube ne 'Fail' bola
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+        // --- NAYA SONARQUBE SECTION KHATAM ---
+
         stage('Trivy FS Scan') {
             steps {
                 script {
@@ -67,7 +94,6 @@ pipeline {
             steps {
                 script {
                     echo "☸️ Deploying to Kubernetes (Minikube)..."
-                    // Ye command k8s folder ke andar ki deploy.yaml ko run karegi
                     sh "kubectl apply -f k8s/deploy.yaml"
                     
                     echo "🚀 Checking Deployment Status..."
@@ -82,7 +108,7 @@ pipeline {
         always {
             archiveArtifacts artifacts: 'trivy-fs-report.txt', fingerprint: true
             sh "sudo docker logout || true"
-            echo "✅ Bhai Abhishek, Pipeline with K8s Deployment successfully finish ho gayi!"
+            echo "✅ Bhai Abhishek, Pipeline with DevSecOps & K8s successfully finish ho gayi!"
         }
     }
 }
